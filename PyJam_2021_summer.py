@@ -1,19 +1,43 @@
 from sys import exit
 from random import randint,choice
 import pygame, easygui
-print('import easygui and pygame if you have not already')
+print('Install easygui and pygame if you have not already')
 while True:
-    option = easygui.buttonbox(msg='Choose an option', choices=['PLAY','HELP','INFO','CHEATS','RESET HIGHSCORE'], default_choice = 'PLAY',cancel_choice='PLAY')
+    option = easygui.buttonbox(msg='Choose an option', choices=['PLAY','HELP','INFO','CHEATS','RESET'], default_choice = 'PLAY',cancel_choice='PLAY')
     if option == 'PLAY':
         break
     elif option == 'HELP':
-        easygui.msgbox(msg='The goal of the game is to not hit the red squares for as long as possible.\nTo move, use the left and right arrow keys.\nIf you see a yellow like square and hit it you will get a couple extra points.\nThe farther along you go the faster it will get.\nIf you see a blue triangle and hit it you will have a shield and get an extra life.\nThe checkered squares will delete all the red squares.\nThe sides will teleport you to the other side.\nThe other squares are the background.\nPress space to pause/unpause.\nA yellow flash means that you have beat your highscore.')
+        easygui.msgbox(msg='The goal of the game is to not hit the red squares for as long as possible.\nTo move, use the left and right arrow keys.\nIf you see a yellow like square and hit it you will get a couple extra points.\nThe farther along you go the faster it will get.\nIf you see a blue triangle and hit it you will have a shield and get an extra life.\nThe checkered squares will delete all the red squares.\nThe sides will teleport you to the other side.\nThe other squares are the background.\nPress space to pause/unpause.\nA yellow flash means that you have beat your highscore.\nYour game is saved, if you would like to reset this press RESET')
         continue
     elif option == 'INFO':
         easygui.msgbox(msg='This game was created by Zachary Summers as part of the summer 2021 pyjam game jam.')
         continue
-    elif option == 'RESET HIGHSCORE':
+    elif option == 'RESET':
         file = open('Highscore.txt','w')
+        file.write('0')
+        file.close()
+        file = open('coin_rects.txt','w')
+        file.write('[]')
+        file.close()
+        file = open('shield_rects.txt','w')
+        file.write('[]')
+        file.close()
+        file = open('background_rects.txt','w')
+        file.write('[]')
+        file.close()
+        file = open('die_rects.txt','w')
+        file.write('[]')
+        file.close
+        file = open('power_rects.txt','w')
+        file.write('[]')
+        file.close
+        file = open('score.txt','w')
+        file.write('0')
+        file.close()
+        file = open('shields.txt','w')
+        file.write('0')
+        file.close()
+        file = open('time.txt','w')
         file.write('0')
         file.close()
         continue
@@ -26,22 +50,35 @@ pygame.display.set_caption('Falling Forever')
 pygame.mixer.music.play(-1)
 size = (900,800)
 screen = pygame.display.set_mode(size)
-screen.fill((159, 255, 133))
 x = 450
 y = 150
 w = 50
 h = 50
-power_rects = []
-shield_rects = []
-shield = 0
+file = open('power_rects.txt')
+exec('power_rects =' + file.read())
+file.close()
+file = open('shield_rects.txt')
+exec('shield_rects =' + file.read())
+file.close()
+file = open('shields.txt')
+shield = int(file.read())
+file.close()
 x_change = 0
-die_rects = []
-background_rects = []
-coin_rects = []
+file = open('die_rects.txt')
+exec('die_rects =' + file.read())
+file.close()
+file = open('background_rects.txt')
+exec('background_rects =' + file.read())
+file.close()
+file = open('coin_rects.txt')
+exec('coin_rects =' + file.read())
+file.close()
 speed = 2
-time1 = 0
-score = 0
-color = (randint(0,255),randint(0,255),randint(0,255))
+file = open('time.txt')
+time1 = int(file.read())
+file = open('score.txt')
+score =  int(file.read())
+file.close()
 font=pygame.font.SysFont("comicsansms",50)
 s = 1
 coinPic = pygame.image.load('cookie.jpg')
@@ -56,6 +93,8 @@ highscoreHitTimeRemainingBool=False
 img = pygame.image.load('img.jpg')
 img = pygame.transform.scale(img, (w,h))
 pause=False
+if time1//2000 >= 2:
+    speed = time1//2000
 while True:
     if score > highscore:
         highscore = score
@@ -68,7 +107,35 @@ while True:
         score += 1 
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
+            file.close()
+            file = open('coin_rects.txt','w')
+            file.write(str(coin_rects))
+            file.close()
+            file = open('shield_rects.txt','w')
+            file.write(str(coin_rects))
+            file.close()
+            file = open('background_rects.txt','w')
+            file.write(str(background_rects))
+            file.close()
+            file = open('die_rects.txt','w')
+            file.write(str(die_rects))
+            file.close
+            file = open('power_rects.txt','w')
+            file.write(str(power_rects))
+            file.close
+            file = open('score.txt','w')
+            file.write(str(score))
+            file.close()
+            file = open('shields.txt','w')
+            file.write(str(shield))
+            file.close()
+            file = open('time.txt','w')
+            file.write(str(time1))
+            file.close()
             pygame.quit()
+            file=open('Highscore.txt','w')
+            file.write(str(highscore))
+            file.close()
             exit()
         if event.type==pygame.KEYDOWN:
             if event.key==pygame.K_RIGHT:
@@ -85,7 +152,7 @@ while True:
             if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
                 x_change = 0
     if time1%2000==0:
-        speed+=1
+        speed += 1 
     if x + 25 >= 900:
         x = 51
     if x - 25 <= 0:
@@ -112,7 +179,8 @@ while True:
             power_rects = []
     for i in coin_rects:
         if pygame.Rect((i[0],i[1],i[2],i[3])).colliderect(pygame.draw.rect(screen,(100,100,100),pygame.Rect((x-25,y-25,w,h)))):
-            score += randint(1,30)
+            add = randint(int(score/5),score*3)
+            score += add
             i[1] = -100
     for i in die_rects:
         if not pause:
@@ -128,9 +196,6 @@ while True:
                 background_rects = []
                 coin_rects = []
                 highscoreHitTimeRemainingBool=True
-                file=open('Highscore.txt','w')
-                file.write(str(highscore))
-                file.close()
                 shield_rects = []
                 break
             else:
